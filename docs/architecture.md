@@ -55,7 +55,7 @@ içindeki `architecture` adımında denetlenir.
 
 ## Deliberately out of scope
 
-- Gerçek kimlik doğrulama (parola, SSO) — demo oturumu kullanılır (`docs/security.md`).
+- SSO, çok faktörlü doğrulama, parola sıfırlama (kullanıcı adı + parola girişi spec 0002 ile kapsamda; `docs/security.md`, ADR 0001).
 - İK/Admin rolü, organizasyon ağacı, çok seviyeli onay.
 - Yıllık izin dışındaki izin türleri, yarım gün izin, resmî tatil takvimi, kıdeme göre hak ediş, devreden bakiye.
 - Onaylanmış iznin iptali.

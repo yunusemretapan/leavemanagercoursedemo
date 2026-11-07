@@ -40,7 +40,8 @@
 - `business` katmanı iş kuralı ihlalinde `app/models` içindeki `DomainError` alt sınıflarını fırlatır
   (ör. `InsufficientBalance`, `OverlappingRequest`, `InvalidDateRange`, `NotAuthorized`, `NotFound`,
   `InvalidStateTransition`). Her alt sınıf sabit bir İngilizce `code` ve Türkçe `message` taşır.
-- `api` katmanında **tek** bir exception handler eşler: Pydantic doğrulama → `422`, oturum yok → `401`,
+- `api` katmanında **tek** bir exception handler eşler: Pydantic doğrulama → `422`, oturum yok / süresi doldu / hatalı giriş
+  (`Unauthenticated`, `SessionExpired`, `InvalidCredentials`) → `401`,
   `NotAuthorized` → `403`, `NotFound` → `404`, `ServiceUnavailable` (veri deposuna erişilemiyor) → `503`,
   diğer kural ihlalleri → `409`. Eşleme tablosu: `app/api/errors.py` (`STATUS_BY_ERROR`).
 - Yanıt gövdesi her zaman: `{"error": {"code": "<EN_CODE>", "message": "<Türkçe mesaj>"}}`.
@@ -52,7 +53,8 @@
 - İzin tarihleri saatsiz `datetime.date`; API'de ISO-8601 `YYYY-MM-DD`; SQLite'ta `TEXT` (ISO).
 - Zaman damgaları (`created_at`, `decided_at`) UTC, ISO-8601 `Z` sonekli `TEXT`.
 - "Bugün" ve "şimdi" yalnızca enjekte edilen `Clock`'tan gelir; `date.today()`, `datetime.now()`,
-  `datetime.utcnow()` doğrudan kullanılmaz (testte `FixedClock`).
+  `datetime.utcnow()` doğrudan kullanılmaz. Arayüz `app/models/clock.py` (`Clock`, `SystemClock`);
+  testte `tests/conftest.py` `FakeClock`.
 - Gün sayıları `int` (yarım gün yok). Kimlikler SQLite `INTEGER PRIMARY KEY`.
 - Durum ve tür alanları `Enum` (İngilizce değerler: `PENDING / APPROVED / REJECTED / CANCELLED`, `ANNUAL`);
   DB'de enum değeri `TEXT` olarak, `CHECK` kısıtıyla.

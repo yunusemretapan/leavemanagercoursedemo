@@ -24,3 +24,40 @@ main {
 .status--error {
   border-left-color: #cf222e;
 }
+
+.card {
+  margin-bottom: 1.5rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0.75rem;
+}
+
+.field label {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.field input {
+  padding: 0.5rem;
+  font: inherit;
+  border: 1px solid #8c959f;
+  border-radius: 0.25rem;
+}
+
+button {
+  padding: 0.5rem 1rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: progress;
+}
+
+.message:not(:empty) {
+  color: #cf222e;
+  margin-top: 0.75rem;
+}

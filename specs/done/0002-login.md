@@ -1,6 +1,6 @@
 # Spec 0002 — kullanıcılar, parolalı giriş ve oturum
 
-- Status: In progress
+- Status: Shipped
 - Mode: lite
 - Plan: `specs/plans/0002-plan.md`
 - Self-critique: done
@@ -109,29 +109,50 @@ yönetimi ve izin özellikleri.
 
 ## Acceptance criteria
 
-- [ ] AC-1 — Boş bir veri deposuyla ilk açılışta R-1 tablosundaki altı kullanıcı adları, rolleri ve yöneticileriyle oluşur; ikinci açılışta kullanıcı sayısı altı kalır.
-- [ ] AC-2 — `DEMO_PASSWORD` yoksa, 12 karakterden kısaysa, 128 karakterden uzunsa veya yaygın parolalar listesindeyse uygulama açılmaz ve parolayı yazmadan nedeni Türkçe bildirir; tam 12 ve tam 128 karakterlik geçerli bir parolayla açılır. Kullanıcı adına eşit bir parola politika tarafından reddedilir.
-- [ ] AC-3 — Veri deposunda hiçbir parola düz metin bulunmaz; aynı parolayı taşıyan iki kullanıcının saklanan değerleri birbirinden farklıdır.
-- [ ] AC-4 — Doğru kullanıcı adı (büyük/küçük harf farkıyla da) ve parolayla giriş başarılıdır: kullanıcının adı ve rolü döner ve `HttpOnly`, `SameSite=Lax` bir oturum çerezi verilir (`Secure` yapılandırmayla açıldığında çerezde bulunur).
-- [ ] AC-5 — Yanlış parola ve olmayan kullanıcı adı aynı `401` durumunu ve birebir aynı gövdeyi ("Kullanıcı adı veya parola hatalı.") döner; olmayan kullanıcıda da parola doğrulaması çalışır.
-- [ ] AC-6 — Oturum olmadan veya geçersiz/değiştirilmiş bir belirteçle kendi bilgisini isteyen kullanıcı `401`, `UNAUTHENTICATED` kodu ve standart hata gövdesi alır; sağlık kontrolü oturumsuz da çalışır. Veri deposunda oturum belirtecinin kendisi değil yalnızca özeti bulunur.
-- [ ] AC-7 — Oturum, 29 dakika aralıklı isteklerle 8 saate kadar geçerli kalır; 30 dakikadan uzun hareketsizlikten sonra ve açılışından 8 saat sonra (etkinliğe rağmen) `401` ve `SESSION_EXPIRED` kodu döner; süresi dolan oturum veri deposundan silinmiştir.
-- [ ] AC-8 — Çıkıştan sonra eski belirteç `401` alır; oturum yokken çıkış başarılı döner; iki ardışık girişte farklı belirteçler üretilir ve aynı tarayıcının önceki belirteci geçersizdir; aynı kullanıcının başka bir oturumu çıkıştan etkilenmez.
-- [ ] AC-9 — JSON olmayan bir gövdeyle (ör. form-encoded) gönderilen giriş isteği reddedilir ve oturum açılmaz.
-- [ ] AC-10 — Başlangıç sayfası User experience'taki durumları doğru metinle üretir: giriş formu, gönderiliyor, hata, sunucuya ulaşılamıyor, oturum süresi doldu ve karşılama ("Hoş geldin, <Ad> (<Rol>)" + Çıkış); alanlar etiketli ve doğru `autocomplete` değerlerini taşır.
+- [x] AC-1 — Boş bir veri deposuyla ilk açılışta R-1 tablosundaki altı kullanıcı adları, rolleri ve yöneticileriyle oluşur; ikinci açılışta kullanıcı sayısı altı kalır.
+- [x] AC-2 — `DEMO_PASSWORD` yoksa, 12 karakterden kısaysa, 128 karakterden uzunsa veya yaygın parolalar listesindeyse uygulama açılmaz ve parolayı yazmadan nedeni Türkçe bildirir; tam 12 ve tam 128 karakterlik geçerli bir parolayla açılır. Kullanıcı adına eşit bir parola politika tarafından reddedilir.
+- [x] AC-3 — Veri deposunda hiçbir parola düz metin bulunmaz; aynı parolayı taşıyan iki kullanıcının saklanan değerleri birbirinden farklıdır.
+- [x] AC-4 — Doğru kullanıcı adı (büyük/küçük harf farkıyla da) ve parolayla giriş başarılıdır: kullanıcının adı ve rolü döner ve `HttpOnly`, `SameSite=Lax` bir oturum çerezi verilir (`Secure` yapılandırmayla açıldığında çerezde bulunur).
+- [x] AC-5 — Yanlış parola ve olmayan kullanıcı adı aynı `401` durumunu ve birebir aynı gövdeyi ("Kullanıcı adı veya parola hatalı.") döner; olmayan kullanıcıda da parola doğrulaması çalışır.
+- [x] AC-6 — Oturum olmadan veya geçersiz/değiştirilmiş bir belirteçle kendi bilgisini isteyen kullanıcı `401`, `UNAUTHENTICATED` kodu ve standart hata gövdesi alır; sağlık kontrolü oturumsuz da çalışır. Veri deposunda oturum belirtecinin kendisi değil yalnızca özeti bulunur.
+- [x] AC-7 — Oturum, 29 dakika aralıklı isteklerle 8 saate kadar geçerli kalır; 30 dakikadan uzun hareketsizlikten sonra ve açılışından 8 saat sonra (etkinliğe rağmen) `401` ve `SESSION_EXPIRED` kodu döner; süresi dolan oturum veri deposundan silinmiştir.
+- [x] AC-8 — Çıkıştan sonra eski belirteç `401` alır; oturum yokken çıkış başarılı döner; iki ardışık girişte farklı belirteçler üretilir ve aynı tarayıcının önceki belirteci geçersizdir; aynı kullanıcının başka bir oturumu çıkıştan etkilenmez.
+- [x] AC-9 — JSON olmayan bir gövdeyle (ör. form-encoded) gönderilen giriş isteği reddedilir ve oturum açılmaz.
+- [x] AC-10 — Başlangıç sayfası User experience'taki durumları doğru metinle üretir: giriş formu, gönderiliyor, hata, sunucuya ulaşılamıyor, oturum süresi doldu ve karşılama ("Hoş geldin, <Ad> (<Rol>)" + Çıkış); alanlar etiketli ve doğru `autocomplete` değerlerini taşır.
 
 ## Definition of Done
-- [ ] Every acceptance criterion mapped to proof (test or reproducible observation)
-- [ ] `scripts/check` green
-- [ ] Independent review done; real findings fixed, noise rejected with written rationale, deferred ones in `specs/backlog.md`
-- [ ] Docs / ADRs updated if behavior or architecture changed (`docs/security.md`, `docs/architecture.md`, `docs/domain.md`, README, `.env.example`, ADR 0001 sunucu tarafı oturum ve scrypt; B-1 kapatıldı)
-- [ ] Spec moved to `specs/done/` (it becomes immutable there)
+- [x] Every acceptance criterion mapped to proof (test or reproducible observation)
+- [x] `scripts/check` green
+- [x] Independent review done; real findings fixed, noise rejected with written rationale, deferred ones in `specs/backlog.md`
+- [x] Docs / ADRs updated if behavior or architecture changed (`docs/security.md`, `docs/architecture.md`, `docs/domain.md`, README, `.env.example`, ADR 0001 sunucu tarafı oturum ve scrypt; B-1 kapatıldı)
+- [x] Spec moved to `specs/done/` (it becomes immutable there)
+
+## Evidence (VERIFY, HEAD f8e1585)
+Full green: CHECK GREEN (full, 8 steps, 11 s) @c2a69d8 — https://github.com/yunusemretapan/leavemanagercoursedemo/actions/runs/42383208793
+(HEAD yalnızca `specs/` kadar farklı) · QA doğrudan: CHECK GREEN (full, 8 steps, 47 s), HEAD içeriği, geçici kopya.
+Yeniden üretim: `./scripts/check`. Hassas alan: her kriter QA'nın kasıtlı bozmalarıyla kırmızıya döndü (43 bozma, 42 kırmızı;
+B4f: `lower()` tek başına kaldırılınca `COLLATE NOCASE` korumaya devam ediyor — ikisi birlikte kırmızı).
+
+| Acceptance criterion | Evidence | Status |
+|---|---|---|
+| AC-1 | `test_first_start_seeds_six_demo_users_with_managers`, `test_second_start_keeps_six_users`; bozmalar: yanlış yönetici, dolu tablo koruması kaldırıldı → kırmızı | PASS |
+| AC-2 | `test_policy_rejects_short_long_common_and_username`, `test_policy_accepts_12_and_128_chars`, `test_validate_demo_password_boundaries_and_no_echo`, `test_validate_demo_password_checks_every_demo_username`, `test_app_refuses_to_start_without_valid_demo_password`; gözlem: 129 karakter → çıkış kodu 2; bozmalar: alt/üst sınır, kara liste, yalnızca ilk kullanıcı, parola stderr'de → kırmızı | PASS |
+| AC-3 | `test_hashes_differ_for_same_password_and_verify`, `test_verify_with_production_params`, `test_no_plaintext_password_in_database`; bozmalar: sabit salt, düz parola, N=2^14 → kırmızı | PASS |
+| AC-4 | `test_login_success_case_insensitive_sets_session_cookie`, `test_secure_cookie_flag_when_configured`; bozmalar: HttpOnly, SameSite, Secure (iki yönde), harf duyarlılığı → kırmızı | PASS |
+| AC-5 | `test_wrong_password_and_unknown_user_get_identical_401`, `test_unknown_user_still_verifies_password`; bozmalar: farklı gövde/mesaj, doğrulama atlandı → kırmızı | PASS |
+| AC-6 | `test_me_without_or_with_tampered_token_is_unauthenticated`, `test_health_open_and_only_token_hash_stored`, `test_every_api_route_requires_session_except_the_allowlist`; bozmalar: 403, değiştirilmiş belirteç kabulü, ham belirteç saklama, health kapalı → kırmızı | PASS |
+| AC-7 | `test_session_survives_activity_until_absolute_limit`, `test_idle_timeout_expires_and_deletes_session`, `test_absolute_timeout_expires_despite_activity`, `test_expired_session_returns_session_expired_code`; bozmalar: idle 60 dk, mutlak yok, touch yok, silme yok, sınır, hata kodu → kırmızı | PASS |
+| AC-8 | `test_logout_invalidates_only_this_session`, `test_relogin_issues_new_token_and_drops_old`, `test_logout_ends_session_and_without_session_succeeds`, `test_relogin_in_same_browser_invalidates_previous_token`; bozmalar: çıkış/yeniden giriş silmiyor, tüm oturumlar siliniyor, oturumsuz çıkış 401, sabit belirteç → kırmızı | PASS |
+| AC-9 | `test_form_encoded_login_is_rejected_without_session`, `test_json_login_without_content_type_is_rejected`, `test_non_json_logout_is_rejected_and_session_survives`; bozmalar: form ayrıştırma, `strict_content_type=False` → kırmızı | PASS |
+| AC-10 | `web/tests/auth-view.test.js` (5), `test_index_page_has_labelled_login_form`; S-1…S-9b; 7 bozma → kırmızı | PASS |
+
+UI: S-1 boş form · S-2 gönderiliyor · S-3 hata · S-4 sunucuya ulaşılamıyor · S-5 karşılama · S-6 oturumla yenileme · S-7 çıkış başarısız (F-6) · S-8 oturum süresi doldu · S-9a yönetici karşılaması · S-9b çıkış sonrası — S-1…S-9b agent-captured, judged by yunusemretapan at SHIP, 2026-11-07.
 
 ## Scorecard (fill at ship — honest numbers make the process improvable)
 | Metric | Value |
 |---|---|
-| Spec revisions | |
-| Fix rounds | |
-| Review findings: real / noise / deferred | |
-| Regressions introduced | |
-| Bugs escaped to production | |
+| Spec revisions | 0 |
+| Fix rounds | 2 |
+| Review findings: real / noise / deferred | 11 / 2 / 0 |
+| Regressions introduced | 0 |
+| Bugs escaped to production | 0 (üretime çıkmıyor) |

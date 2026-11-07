@@ -11,6 +11,8 @@ from app.business.passwords import (
     hash_password,
     verify_password,
 )
+from app.business.seed import validate_demo_password
+from app.models.errors import ConfigurationError
 
 FAST = ScryptParams(n=2**10, r=8, p=1)
 GOOD = "uzun ve benzersiz bir cümle"
@@ -65,3 +67,21 @@ def test_verify_with_production_params(params: ScryptParams) -> None:
     stored = hash_password(GOOD, params)
     assert stored.startswith(f"scrypt${2**17}$8$1$")
     assert verify_password(GOOD, stored)
+
+
+def test_validate_demo_password_boundaries_and_no_echo() -> None:
+    twelve = "k" * 11 + "x"
+    long_ok = "ç" * MAX_LENGTH
+    assert validate_demo_password(twelve) == twelve
+    assert validate_demo_password(long_ok) == long_ok
+    for rejected in (None, "", "k" * 10 + "x", "ç" * (MAX_LENGTH + 1), "x" * 200):
+        with pytest.raises(ConfigurationError) as caught:
+            validate_demo_password(rejected)
+        if rejected:
+            assert rejected not in str(caught.value)
+
+
+def test_validate_demo_password_checks_every_demo_username() -> None:
+    # "zeynep.sahin" is 12 characters and a demo username (not the first one in the list).
+    with pytest.raises(ConfigurationError, match="kullanıcı adıyla aynı"):
+        validate_demo_password("zeynep.sahin")

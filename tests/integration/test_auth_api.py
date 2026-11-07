@@ -1,3 +1,4 @@
+import re
 import sqlite3
 from dataclasses import replace
 from datetime import timedelta
@@ -181,3 +182,30 @@ def test_relogin_in_same_browser_invalidates_previous_token(
         assert conn.execute("SELECT COUNT(*) FROM sessions").fetchone()[0] == 1
     finally:
         conn.close()
+
+
+OPEN_API_ROUTES = {
+    ("POST", "/api/auth/login"),
+    ("POST", "/api/auth/logout"),
+    ("GET", "/api/health"),
+}
+
+
+def test_every_api_route_requires_session_except_the_allowlist(client: TestClient) -> None:
+    # Default deny as a check, not a convention (R-10): a new /api route without
+    # current_user turns this red. The route inventory is FastAPI's own OpenAPI schema
+    # (included routers are nested, not flat in app.routes). Path parameters get a dummy value.
+    paths: dict[str, dict[str, object]] = client.app.openapi()["paths"]  # type: ignore[attr-defined]
+    protected: list[tuple[str, str]] = []
+    for path, operations in paths.items():
+        if not path.startswith("/api/"):
+            continue
+        for method in sorted(m.upper() for m in operations):
+            if (method, path) not in OPEN_API_ROUTES:
+                protected.append((method, path))
+    assert ("GET", "/api/me") in protected
+    for method, path in protected:
+        url = re.sub(r"\{[^}]+\}", "1", path)
+        response = client.request(method, url, json={})
+        assert response.status_code == 401, (method, path)
+        assert response.json()["error"]["code"] == "UNAUTHENTICATED", (method, path)

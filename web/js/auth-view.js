@@ -5,6 +5,7 @@ export const MESSAGES = {
   INVALID_CREDENTIALS: 'Kullanıcı adı veya parola hatalı.',
   SESSION_EXPIRED: 'Oturumunuzun süresi doldu. Lütfen tekrar giriş yapın.',
   NETWORK: 'Sunucuya ulaşılamıyor. Lütfen daha sonra tekrar deneyin.',
+  TOO_MANY_ATTEMPTS: 'Çok fazla başarısız giriş denemesi. Lütfen 15 dakika sonra tekrar deneyin.',
 };
 
 /**
@@ -22,6 +23,8 @@ export function messageForError(code) {
       return MESSAGES.INVALID_CREDENTIALS;
     case 'SESSION_EXPIRED':
       return MESSAGES.SESSION_EXPIRED;
+    case 'TOO_MANY_ATTEMPTS':
+      return MESSAGES.TOO_MANY_ATTEMPTS;
     default:
       return MESSAGES.NETWORK;
   }

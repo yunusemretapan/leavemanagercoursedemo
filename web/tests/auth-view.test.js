@@ -41,6 +41,10 @@ test('messageForError codes', () => {
     'Oturumunuzun süresi doldu. Lütfen tekrar giriş yapın.',
   );
   assert.equal(
+    messageForError('TOO_MANY_ATTEMPTS'),
+    'Çok fazla başarısız giriş denemesi. Lütfen 15 dakika sonra tekrar deneyin.',
+  );
+  assert.equal(
     messageForError('INTERNAL_ERROR'),
     'Sunucuya ulaşılamıyor. Lütfen daha sonra tekrar deneyin.',
   );

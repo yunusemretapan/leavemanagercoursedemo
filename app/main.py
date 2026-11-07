@@ -1,5 +1,6 @@
 """Composition root: wires the layers together (docs/architecture.md)."""
 
+import mimetypes
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
@@ -15,7 +16,16 @@ from app.data.migrations import apply_migrations
 WEB_DIR = REPO_ROOT / "web"
 
 
+def _serve_js_as_javascript() -> None:
+    # Windows may register .js as text/plain (HKCR\.js) and mimetypes reads that; browsers then
+    # refuse ES module scripts (Known traps). init() first: a later init() would re-read the OS
+    # mapping and undo add_type.
+    mimetypes.init()
+    mimetypes.add_type("text/javascript", ".js")
+
+
 def create_app(settings: Settings | None = None) -> FastAPI:
+    _serve_js_as_javascript()
     settings = settings or Settings.from_env()
     database = Database(settings.db_path)
 

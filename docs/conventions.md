@@ -66,6 +66,7 @@
 - `sqlite3` bağlantısını thread'ler arasında paylaşmak — her istek kendi bağlantısını açar/kapatır, açılışta `PRAGMA foreign_keys=ON` — from bootstrap 2026-11-07
 - Makinedeki Python 3.7 ile çalışmak (çıplak `python`/`pip`) — her zaman `.venv` yorumlayıcısı (`.venv/Scripts/python -m …` Windows, `.venv/bin/python -m …` Linux) — from bootstrap 2026-11-07
 - `TestClient(app)`'i `with` olmadan kurmak (lifespan/migration çalışmaz) — istemciyi her zaman bir fixture içinde `with TestClient(app) as client:` ile kur — from bootstrap 2026-11-07
+- Windows'ta `mimetypes` kayıt defterinden `.js` → `text/plain` okur, tarayıcı ES module script'i reddeder ve sayfa çalışmaz — composition root'ta `mimetypes.init()` sonrası `add_type("text/javascript", ".js")` (`app/main.py`); testi `test_module_scripts_are_served_as_javascript_even_if_os_says_text_plain` — from spec 0001 VERIFY F-V1
 - Pydantic `date` alanının saat içeren değerleri gevşekçe kabul etmesi — tarih alanlarında strict mod + `YYYY-MM-DD` doğrulaması — from bootstrap 2026-11-07
 
 ## Enforced by tooling

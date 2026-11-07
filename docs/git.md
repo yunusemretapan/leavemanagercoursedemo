@@ -1,6 +1,6 @@
 # Git
 
-> **Template — adjust at bootstrap.** Defaults below are safe; loosen consciously, not accidentally.
+> Bootstrap 2026-11-07'de ayarlandı: güvenli varsayılanlar olduğu gibi korundu.
 
 ## Branching
 - `feature/<spec-no>-<short-name>` — **no branch without a spec.** Also for CHANGE-lane mini-specs.
@@ -12,6 +12,8 @@
 
 ## Commits
 - Conventional Commits, with a plan reference: `feat(catalog): paging endpoint [plan 0001/3]`.
+  Bu projede: commit mesajları İngilizce; scope bir katman veya alan adı —
+  `api`, `business`, `data`, `models`, `web`, `leave`, `docs`, `build` (ör. `feat(leave): create leave request [plan 0002/3]`).
   Review fixes name their fix round instead of the step:
   `fix(catalog): empty page size [plan 0001/fix-2]` — the reviewer counts rounds from these
   (R-06 after round 3).
@@ -31,11 +33,10 @@
 - Force push, history rewriting on shared branches. Undo = `git revert` (see recovery R-11).
 
 ## Trivial changes
-<!-- Set at bootstrap. Applies only to requests the change-request triage rubric
-     (workflows/change-request.md) classifies as TRIVIAL: no acceptance criterion changes, no shared code. -->
-- Policy: **(1) PR + one reviewer, no spec** — default; alternatives: (2) direct commit allowed on a
-  `trivial/<short-name>` branch · (3) everything goes through a mini-spec (`specs/TEMPLATE-mini.md`;
-  no ANALYZE here: run the self-critique pass of `prompts/spec.md`, then `Self-critique: done`).
+<!-- Applies only to requests the change-request triage rubric (workflows/change-request.md)
+     classifies as TRIVIAL: no acceptance criterion changes, no shared code. -->
+- Policy: **(1) PR + one reviewer, no spec** — bootstrap 2026-11-07'de seçildi. `trivial/<short-name>`
+  branch'i, tek ve dar bir commit, bir kişinin PR incelemesi.
 - Always: one narrow commit, `scripts/check` green. A second file or a new test means re-triage.
 
 ## Pull requests

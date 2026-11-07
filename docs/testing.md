@@ -1,6 +1,6 @@
 # Testing
 
-> **Template — filled during bootstrap.**
+> Bootstrap 2026-11-07'de dolduruldu.
 
 ## The contract
 - Every acceptance criterion maps to at least one test (criterion ↔ test map lives in the plan).
@@ -8,11 +8,37 @@
 - The whole suite runs inside `scripts/check` — one command, everywhere.
 
 ## Frameworks & layout
-<!-- Test framework(s), where tests live, naming pattern. -->
+| Katman | Araç | Yer | Profil |
+|---|---|---|---|
+| Unit — iş kuralları (`app/business`, `app/models`) | pytest | `tests/unit/` | `[fast]` (`-m "not integration"`) |
+| Integration — API + gerçek geçici SQLite | pytest + FastAPI `TestClient` (httpx), `@pytest.mark.integration` | `tests/integration/` | yalnızca full (`-m integration`) |
+| Frontend — saf görünüm fonksiyonları, doğrulama, biçimlendirme, `escapeHtml` | `node --test` (Node yerleşik, npm bağımlılığı yok) | `web/tests/*.test.js` | `[fast]` |
+| e2e (tarayıcı) | **yok** | — | — |
+
+- Adlandırma: `docs/conventions.md` "Naming". Marker'lar `pyproject.toml`'da kayıtlı, `--strict-markers` açık.
+- **UI'yi kanıtlayan katman:** frontend, saf görünüm fonksiyonları (`renderX(state) → HTML string`,
+  form doğrulama, tarih biçimlendirme) ve mantık içermeyen ince bir DOM bağlama katmanı olarak yazılır.
+  Ekran durumları (boş, yükleniyor, hata, başarı, yetki yok) saf fonksiyon testleriyle kanıtlanır;
+  ekran görüntüsü VERIFY'da alınır (Evidence for UI criteria).
+- **Determinizm (bu yığında):**
+  - Zaman: her test `FixedClock` enjekte eder; check adımları `TZ=UTC` ile koşar. `date.today()`/`datetime.now()` yasak (Ruff `DTZ`).
+  - Veri: her integration testi kendi geçici SQLite dosyasını (`tmp_path`) kullanır; migration'lar sıfırdan uygulanır, seed test içinde yapılır. Bir koşunun verisi sonrakine ulaşmaz (Resource hygiene 5).
+  - Oturum: testlerde sabit bir test `SESSION_SECRET`'ı; gerçek `.env` okunmaz.
+  - Rastgelelik yok; ağ yok (pip-audit hariç, o full-only ve `requires` satırlı).
+  - Hareket: arayüzde animasyon/geçiş yok; saf fonksiyon testleri zamana bağlı değildir.
+  - Ekran görüntüsü aracı (VERIFY'da): ilk UI spec'inde seçilir; kaydedilmez (Evidence policy).
 
 ## What must be tested
-<!-- e.g. every business rule (BR-n), every boundary/forbidden dependency; the e2e journeys and
-     budget, if the project has e2e at all (Test layers). -->
+- Her iş kuralı (BR-1…BR-8, `docs/domain.md`) en az bir unit testle, sınır durumlarıyla:
+  hafta sonu/hafta içi sınırı, tam bakiye (14) ve bakiye +1, bekleyen taleplerle bakiye aşımı,
+  çakışmanın tek ortak günü, bugün/dün sınırı, kendi talebini onaylama, başka ekibin talebi.
+- Her geçerli ve geçersiz durum geçişi (`PENDING→…`; karara bağlanmış talebe her eylem).
+- Her API uç noktası: başarılı yol + ürettiği her hata kodu (`401/403/404/409/422`) integration testle;
+  hata gövdesinin biçimi (`{"error": {"code", "message"}}`) ve sızıntı olmaması dahil.
+- `escapeHtml` ve kullanıcı verisi gösteren her görünüm fonksiyonu: HTML enjeksiyonu kaçışlanır.
+- Katman sınırları: import-linter (`architecture` check adımı) — test değil, check adımı.
+- **e2e: yok.** Kritik tarayıcı yolculuğu yok; bütçe 0 yolculuk / 0 dakika. Biri gerekirse ADR ile.
+- Sayısal coverage hedefi yok: kriter ↔ test eşlemesi zorunlu, yüzde hedefi anlamsız test üretir.
 
 ## Test layers
 1. **The cheapest test that proves the criterion.** Unit first, then component or integration

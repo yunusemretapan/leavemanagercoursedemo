@@ -13,3 +13,5 @@ step 7). Nothing lands here without that decision; noise is rejected in the tria
   — Recommendation: <the reviewer's action> — Deferred by: <name>, <YYYY-MM-DD>, <why>
   A decision deferred at bootstrap (its REPORT) uses Source: bootstrap <YYYY-MM-DD>.
 -->
+
+- **B-1** — Gerçek kimlik doğrulama (parola/SSO) yok; demo oturumu (kullanıcı seçimi + imzalı çerez) üretim için uygun değil — Source: bootstrap 2026-11-07 — Severity: Info (kapsam dışı, bilinçli) — Recommendation: ürün üretime aday olursa ayrı bir spec ile gerçek AuthN — Deferred by: yunusemretapan, 2026-11-07, kurs demosu kapsamı (docs/security.md)

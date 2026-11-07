@@ -162,3 +162,22 @@ def test_non_json_logout_is_rejected_and_session_survives(
     assert response.status_code == 422
     assert "set-cookie" not in response.headers
     assert client.get("/api/me").status_code == 200  # session still alive (CSRF, R-11)
+
+
+def test_relogin_in_same_browser_invalidates_previous_token(
+    client: TestClient, settings: Settings
+) -> None:
+    login(client)
+    old = client.cookies.get("lm_session")
+    login(client)  # the browser still sends the old cookie with this login (R-9, fixation)
+    new = client.cookies.get("lm_session")
+    assert old and new and new != old
+    client.cookies.set("lm_session", old)
+    stale = client.get("/api/me")
+    assert stale.status_code == 401
+    assert stale.json()["error"]["code"] == "UNAUTHENTICATED"
+    conn = sqlite3.connect(settings.db_path)
+    try:
+        assert conn.execute("SELECT COUNT(*) FROM sessions").fetchone()[0] == 1
+    finally:
+        conn.close()

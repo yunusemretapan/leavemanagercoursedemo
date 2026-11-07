@@ -69,6 +69,7 @@
 - Makinedeki Python 3.7 ile çalışmak (çıplak `python`/`pip`) — her zaman `.venv` yorumlayıcısı (`.venv/Scripts/python -m …` Windows, `.venv/bin/python -m …` Linux) — from bootstrap 2026-11-07
 - `TestClient(app)`'i `with` olmadan kurmak (lifespan/migration çalışmaz) — istemciyi her zaman bir fixture içinde `with TestClient(app) as client:` ile kur — from bootstrap 2026-11-07
 - Windows'ta `mimetypes` kayıt defterinden `.js` → `text/plain` okur, tarayıcı ES module script'i reddeder ve sayfa çalışmaz — composition root'ta `mimetypes.add_type("text/javascript", ".js")` (sonrasında `mimetypes.init()` çağrılmaz, eşlemeyi geri alır) (`app/main.py`); testi `test_module_scripts_are_served_as_javascript_even_if_os_says_text_plain` — from spec 0001 VERIFY F-V1
+- Starlette `.env` okuyucusu (`starlette.config.Config`) değerleri kırpar ve çevreleyen tırnakları atar; ortam değişkeni kırpılmaz — boşluk/tırnak taşıyabilen sırları ortam değişkeniyle verin, `.env` davranışını `.env.example`/README'de belgeleyin — from spec 0002 review F-3
 - Pydantic `date` alanının saat içeren değerleri gevşekçe kabul etmesi — tarih alanlarında strict mod + `YYYY-MM-DD` doğrulaması — from bootstrap 2026-11-07
 
 ## Enforced by tooling

@@ -16,6 +16,8 @@ py -3.13 -m venv .venv              # Linux/macOS: python3.13 -m venv .venv
 **Demo parolası** (bir kez): `.env.example` dosyasını `.env` olarak kopyalayıp `DEMO_PASSWORD`'e
 en az 12 karakterlik, yaygın olmayan bir değer yazın (veya aynı adla ortam değişkeni verin).
 `.env` git'e girmez. Parola yoksa veya politikaya uymuyorsa uygulama nedenini söyleyerek açılmaz.
+`.env`'deki değerlerin başındaki/sonundaki boşluklar ve çevreleyen tırnaklar atılır; ortam değişkeni
+olduğu gibi kullanılır.
 
 **Başlatma:**
 

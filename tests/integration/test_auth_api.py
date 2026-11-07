@@ -8,7 +8,7 @@ from fastapi.testclient import TestClient
 
 import app.business.auth as auth_module
 from app.business import passwords
-from app.config import Settings
+from app.config import REPO_ROOT, Settings
 from app.main import create_app
 from tests.conftest import TEST_DEMO_PASSWORD, FakeClock, login
 
@@ -195,6 +195,8 @@ def test_every_api_route_requires_session_except_the_allowlist(client: TestClien
     # Default deny as a check, not a convention (R-10): a new /api route without
     # current_user turns this red. The route inventory is FastAPI's own OpenAPI schema
     # (included routers are nested, not flat in app.routes). Path parameters get a dummy value.
+    # Limit: a route with include_in_schema=False is invisible here, so app/ never uses it
+    # (test_no_route_hides_from_the_inventory, docs/security.md Default deny).
     paths: dict[str, dict[str, object]] = client.app.openapi()["paths"]  # type: ignore[attr-defined]
     protected: list[tuple[str, str]] = []
     for path, operations in paths.items():
@@ -209,3 +211,13 @@ def test_every_api_route_requires_session_except_the_allowlist(client: TestClien
         response = client.request(method, url, json={})
         assert response.status_code == 401, (method, path)
         assert response.json()["error"]["code"] == "UNAUTHENTICATED", (method, path)
+
+
+def test_no_route_hides_from_the_inventory() -> None:
+    # The default-deny inventory reads the OpenAPI schema; a hidden route would escape it.
+    offenders = [
+        str(path.relative_to(REPO_ROOT))
+        for path in (REPO_ROOT / "app").rglob("*.py")
+        if "include_in_schema" in path.read_text(encoding="utf-8")
+    ]
+    assert offenders == []

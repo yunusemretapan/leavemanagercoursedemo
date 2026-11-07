@@ -42,6 +42,9 @@
     yerel demo çalıştırılır.
 - **Default deny:** açık uç noktalar yalnızca `POST /api/auth/login`, `POST /api/auth/logout` ve
   `GET /api/health` (kişisel veri içermez). Diğer her `/api/*` uç noktası oturum ister; yoksa `401`.
+  Bu, `test_every_api_route_requires_session_except_the_allowlist` ile FastAPI'nin OpenAPI rota
+  envanteri üzerinden denetlenir; bu yüzden `app/` hiçbir rotada `include_in_schema` kullanmaz
+  (`test_no_route_hides_from_the_inventory`).
 - **AuthZ `app/business` katmanında uygulanır**, router'da değil: her kullanım senaryosu çağıran
   kullanıcıyı parametre olarak alır ve BR-6 (yalnızca talep sahibinin yöneticisi karar verir, kendi
   talebine karar yok) ve BR-8 (görünürlük) kurallarını kendisi denetler. Hiçbir router bu kontrolü

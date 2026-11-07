@@ -1,3 +1,4 @@
+import json
 import re
 import sqlite3
 from dataclasses import replace
@@ -152,7 +153,12 @@ def test_form_encoded_login_is_rejected_without_session(
 
 @pytest.mark.parametrize(
     ("content", "content_type"),
-    [("", None), ("x=1", "application/x-www-form-urlencoded"), ("{}", "text/plain")],
+    [
+        ("", None),
+        ("x=1", "application/x-www-form-urlencoded"),
+        ("{}", "text/plain"),
+        ("{}", None),  # JSON without a Content-Type: a CORS "simple" request (review r2 F-2)
+    ],
 )
 def test_non_json_logout_is_rejected_and_session_survives(
     client: TestClient, content: str, content_type: str | None
@@ -221,3 +227,18 @@ def test_no_route_hides_from_the_inventory() -> None:
         if "include_in_schema" in path.read_text(encoding="utf-8")
     ]
     assert offenders == []
+
+
+def test_json_login_without_content_type_is_rejected(
+    client: TestClient, settings: Settings
+) -> None:
+    # Relies on FastAPI's strict_content_type default (Known traps); R-11.
+    body = json.dumps({"username": "ali.demir", "password": TEST_DEMO_PASSWORD})
+    response = client.post("/api/auth/login", content=body, headers={"Content-Type": ""})
+    assert response.status_code == 422
+    assert "set-cookie" not in response.headers
+    conn = sqlite3.connect(settings.db_path)
+    try:
+        assert conn.execute("SELECT COUNT(*) FROM sessions").fetchone()[0] == 0
+    finally:
+        conn.close()

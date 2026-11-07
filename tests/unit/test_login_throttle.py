@@ -144,6 +144,25 @@ def test_lock_logs_one_warning_without_password(
     assert line == f"account locked username={USER} ip={IP} at=2026-11-09T09:00:00.000000Z"
 
 
+def test_lock_log_line_escapes_control_characters(
+    throttle: LoginThrottle, caplog: pytest.LogCaptureFixture
+) -> None:
+    forged = "x\naccount locked username=zeynep.sahin ip=1.2.3.4 at=2026-11-09T09:00:00.000000Z"
+    with caplog.at_level(logging.WARNING, logger="app.auth"):
+        for _ in range(ACCOUNT_LIMIT):
+            _fail(throttle, username=forged, ip="10.0.0.1\r\n")
+    records = [r for r in caplog.records if r.name == "app.auth"]
+    assert len(records) == 1
+    line = records[0].getMessage()
+    assert "\n" not in line
+    assert "\r" not in line
+    assert line == (
+        "account locked username=x\\x0aaccount\\x20locked\\x20username=zeynep.sahin"
+        "\\x20ip=1.2.3.4\\x20at=2026-11-09T09:00:00.000000Z ip=10.0.0.1\\x0d\\x0a"
+        " at=2026-11-09T09:00:00.000000Z"
+    )
+
+
 def test_concurrent_wrong_attempts_verify_at_most_five(throttle: LoginThrottle) -> None:
     admitted: list[int] = []
     refused: list[int] = []

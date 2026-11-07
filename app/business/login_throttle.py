@@ -36,6 +36,11 @@ def _seconds(wait: timedelta) -> int:
     return max(1, math.ceil(wait.total_seconds()))
 
 
+def _log_safe(value: str) -> str:
+    """Escape control and whitespace characters so a username cannot forge log lines (CWE-117)."""
+    return "".join(f"\\x{ord(c):02x}" if c.isspace() or not c.isprintable() else c for c in value)
+
+
 class LoginThrottle:
     def __init__(self, db: Database, clock: Clock) -> None:
         self._db = db
@@ -97,7 +102,7 @@ class LoginThrottle:
         if locked:
             logger.warning(
                 "account locked username=%s ip=%s at=%s",
-                reservation.username,
-                reservation.ip,
+                _log_safe(reservation.username),
+                _log_safe(reservation.ip),
                 to_iso(reservation.at),
             )

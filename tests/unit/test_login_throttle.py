@@ -91,6 +91,20 @@ def test_unknown_username_locks_identically(throttle: LoginThrottle) -> None:
     assert caught.value.retry_after == 15 * 60
 
 
+def test_success_lifts_lock_created_by_concurrent_failures(throttle: LoginThrottle) -> None:
+    # A-1: an admitted attempt whose password turns out right lifts a lock that concurrent
+    # failures created while it was being verified.
+    for _ in range(ACCOUNT_LIMIT - 2):
+        _fail(throttle)
+    right = throttle.reserve(USER, IP)
+    wrong = throttle.reserve(USER, "10.0.0.2")
+    throttle.failed(wrong)  # the 5th failure in the window: the account locks
+    with pytest.raises(TooManyAttempts):
+        throttle.reserve(USER, "10.0.0.3")
+    throttle.succeeded(right)
+    throttle.succeeded(throttle.reserve(USER, IP))  # admitted again
+
+
 def test_ip_limit_after_20_failures_any_username(throttle: LoginThrottle) -> None:
     for i in range(IP_LIMIT):
         _fail(throttle, username=f"user{i}")  # never 5 for one username

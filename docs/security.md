@@ -41,7 +41,8 @@
   - **Brute force koruması** (spec 0003, ADR 0002):
     - Kullanıcı adı başına son 15 dk'da 5 başarısız deneme → 15 dk kilit (doğru parola da reddedilir,
       parola doğrulanmaz; kilit sırasındaki denemeler sayılmaz, kilidi uzatmaz). Başarılı giriş
-      kullanıcı adı sayacını sıfırlar. Var olmayan kullanıcı adları aynen sayılır ve kilitlenir.
+      kullanıcı adı sayacını sıfırlar ve o kullanıcı adının kilidini kaldırır (kilit, deneme
+      kabul edildikten sonra eşzamanlı başarısızlıklarla oluşmuş olabilir; parola doğrudur). Var olmayan kullanıcı adları aynen sayılır ve kilitlenir.
     - İstemci adresi başına son 15 dk'da 20 başarısız deneme → o adresin her denemesi reddedilir;
       başarılı giriş adres sayacını sıfırlamaz. Adres yalnızca doğrudan bağlantıdan alınır,
       `X-Forwarded-For` okunmaz.

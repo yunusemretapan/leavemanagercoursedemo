@@ -90,7 +90,11 @@ loginForm.addEventListener('submit', async (event) => {
 
 logoutButton.addEventListener('click', async () => {
   try {
-    await fetch('/api/auth/logout', { method: 'POST' });
+    await fetch('/api/auth/logout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: '{}',
+    });
   } finally {
     showLogin({});
     usernameInput.focus();

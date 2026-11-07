@@ -124,11 +124,11 @@ def test_expired_session_returns_session_expired_code(client: TestClient, clock:
 def test_logout_ends_session_and_without_session_succeeds(client: TestClient) -> None:
     login(client)
     token = client.cookies.get("lm_session")
-    assert client.post("/api/auth/logout").status_code == 204
+    assert client.post("/api/auth/logout", json={}).status_code == 204
     client.cookies.set("lm_session", token or "")
     assert client.get("/api/me").status_code == 401  # old token no longer accepted
     client.cookies.clear()
-    assert client.post("/api/auth/logout").status_code == 204
+    assert client.post("/api/auth/logout", json={}).status_code == 204
 
 
 def test_form_encoded_login_is_rejected_without_session(
@@ -147,3 +147,18 @@ def test_form_encoded_login_is_rejected_without_session(
         assert conn.execute("SELECT COUNT(*) FROM sessions").fetchone()[0] == 0
     finally:
         conn.close()
+
+
+@pytest.mark.parametrize(
+    ("content", "content_type"),
+    [("", None), ("x=1", "application/x-www-form-urlencoded"), ("{}", "text/plain")],
+)
+def test_non_json_logout_is_rejected_and_session_survives(
+    client: TestClient, content: str, content_type: str | None
+) -> None:
+    login(client)
+    headers = {"Content-Type": content_type} if content_type else {}
+    response = client.post("/api/auth/logout", content=content, headers=headers)
+    assert response.status_code == 422
+    assert "set-cookie" not in response.headers
+    assert client.get("/api/me").status_code == 200  # session still alive (CSRF, R-11)

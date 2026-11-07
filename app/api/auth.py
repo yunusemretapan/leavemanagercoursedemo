@@ -18,6 +18,10 @@ class LoginRequest(BaseModel):
     password: str = Field(min_length=1, max_length=MAX_LENGTH)
 
 
+class LogoutRequest(BaseModel):
+    """Empty JSON object: required so that logout, like login, accepts JSON only (R-11)."""
+
+
 class UserResponse(BaseModel):
     username: str
     full_name: str
@@ -62,8 +66,12 @@ def login(
 
 @router.post("/auth/logout", status_code=204)
 def logout(
-    request: Request, response: Response, auth: Annotated[AuthService, Depends(get_auth)]
+    _: LogoutRequest,
+    request: Request,
+    response: Response,
+    auth: Annotated[AuthService, Depends(get_auth)],
 ) -> None:
+    # A body-less or non-JSON post fails validation before this runs (CSRF, R-11).
     auth.logout(request.cookies.get(SESSION_COOKIE))
     response.delete_cookie(
         SESSION_COOKIE, path="/", httponly=True, samesite="lax", secure=_cookie_secure(request)

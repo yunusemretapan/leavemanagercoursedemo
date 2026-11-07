@@ -18,9 +18,8 @@ WEB_DIR = REPO_ROOT / "web"
 
 def _serve_js_as_javascript() -> None:
     # Windows may register .js as text/plain (HKCR\.js) and mimetypes reads that; browsers then
-    # refuse ES module scripts (Known traps). init() first: a later init() would re-read the OS
-    # mapping and undo add_type.
-    mimetypes.init()
+    # refuse ES module scripts (Known traps). add_type initialises the database itself if needed
+    # and overrides the OS mapping; an explicit init() afterwards would re-read it and undo this.
     mimetypes.add_type("text/javascript", ".js")
 
 

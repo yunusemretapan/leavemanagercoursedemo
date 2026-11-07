@@ -10,11 +10,20 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from app.models.errors import DomainError, ServiceUnavailable
+from app.models.errors import (
+    DomainError,
+    InvalidCredentials,
+    ServiceUnavailable,
+    SessionExpired,
+    Unauthenticated,
+)
 
 DEFAULT_DOMAIN_STATUS = 409
 STATUS_BY_ERROR: dict[type[DomainError], int] = {
     ServiceUnavailable: 503,
+    Unauthenticated: 401,
+    SessionExpired: 401,
+    InvalidCredentials: 401,
 }
 HTTP_ERRORS: dict[int, tuple[str, str]] = {
     404: ("NOT_FOUND", "İstenen kaynak bulunamadı."),

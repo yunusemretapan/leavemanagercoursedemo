@@ -12,7 +12,7 @@ akışını (spec → plan → build → review → verify) gerçekçi ama küç
 
 | Term | Meaning | Notes / not to be confused with |
 |---|---|---|
-| Çalışan (`Employee`) | İzin talep eden kişi. Her çalışanın tam bir yöneticisi vardır. | Yönetici de bir çalışandır (kendi izni için). |
+| Çalışan (`Employee`) | İzin talep eden kişi. Üst yönetici hariç her çalışanın tam bir yöneticisi vardır. | Yönetici de bir çalışandır (kendi izni için). Üst yöneticinin izin talebi MVP kapsamı dışıdır (spec 0002). |
 | Yönetici (`Manager`) | Ekibindeki çalışanların taleplerini onaylar/reddeder. | İK/Admin rolü yok (kapsam dışı). |
 | Ekip (`Team`) | Bir yöneticiye doğrudan bağlı çalışanlar. | Departman/organizasyon ağacı yok. |
 | İzin talebi (`LeaveRequest`) | Başlangıç tarihi, bitiş tarihi (dahil), izin türü, isteğe bağlı açıklama. | "İzin" tek başına belirsizdir: talep mi, bakiye mi — açıkça söyleyin. |

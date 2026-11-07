@@ -32,6 +32,8 @@ def test_app_starts_and_answers_health_on_configured_port(tmp_path: Path) -> Non
         "LEAVE_HOST": TEST_HOST,
         "LEAVE_PORT": str(port),
         "LEAVE_DB_PATH": str(tmp_path / "start.db"),
+        "LEAVE_ENV_FILE": str(tmp_path / "no.env"),
+        "DEMO_PASSWORD": "kurs demosu baslangic parolasi",
     }
     # The documented start command (README.md, Çalıştırma), run with this venv's interpreter.
     process = subprocess.Popen(
@@ -61,3 +63,38 @@ def test_app_starts_and_answers_health_on_configured_port(tmp_path: Path) -> Non
         except subprocess.TimeoutExpired:
             process.kill()
             process.wait(timeout=5)
+
+
+@pytest.mark.parametrize(
+    ("demo_password", "expected_reason"),
+    [
+        (None, "DEMO_PASSWORD tanımlı değil"),
+        ("kisa", "en az 12 karakter"),
+        ("parola123456", "yaygın kullanılan"),
+    ],
+)
+def test_app_refuses_to_start_without_valid_demo_password(
+    tmp_path: Path, demo_password: str | None, expected_reason: str
+) -> None:
+    env = {k: v for k, v in os.environ.items() if k != "DEMO_PASSWORD"}
+    env.update(
+        LEAVE_PORT=str(_free_port()),
+        LEAVE_DB_PATH=str(tmp_path / "refuse.db"),
+        LEAVE_ENV_FILE=str(tmp_path / "no.env"),
+        PYTHONIOENCODING="utf-8",
+    )
+    if demo_password is not None:
+        env["DEMO_PASSWORD"] = demo_password
+    completed = subprocess.run(
+        [sys.executable, "-m", "app"],
+        cwd=REPO_ROOT,
+        env=env,
+        capture_output=True,
+        timeout=30,
+        check=False,
+    )
+    stderr = completed.stderr.decode("utf-8")
+    assert completed.returncode == 2
+    assert expected_reason in stderr
+    if demo_password is not None:
+        assert demo_password not in stderr

@@ -13,6 +13,12 @@ py -3.13 -m venv .venv              # Linux/macOS: python3.13 -m venv .venv
 ./scripts/py -m pip install -r requirements.lock
 ```
 
+**Demo parolası** (bir kez): `.env.example` dosyasını `.env` olarak kopyalayıp `DEMO_PASSWORD`'e
+en az 12 karakterlik, yaygın olmayan bir değer yazın (veya aynı adla ortam değişkeni verin).
+`.env` git'e girmez. Parola yoksa veya politikaya uymuyorsa uygulama nedenini söyleyerek açılmaz.
+`.env`'deki değerlerin başındaki/sonundaki boşluklar ve çevreleyen tırnaklar atılır; ortam değişkeni
+olduğu gibi kullanılır.
+
 **Başlatma:**
 
 ```sh
@@ -20,7 +26,15 @@ py -3.13 -m venv .venv              # Linux/macOS: python3.13 -m venv .venv
 ```
 
 Ardından tarayıcıda <http://127.0.0.1:8000> adresini açın; sağlık kontrolü: `/api/health`.
-Veri deposu ilk açılışta `data/leavemanager.db` olarak oluşturulur (git'e girmez).
+Veri deposu ilk açılışta `data/leavemanager.db` olarak oluşturulur (git'e girmez) ve altı demo
+kullanıcı eklenir — hepsinin parolası `DEMO_PASSWORD`:
+
+| Kullanıcı adı | Ad | Rol |
+|---|---|---|
+| `ayse.yilmaz` | Ayşe Yılmaz | Yönetici (üst yönetici) |
+| `mehmet.kaya` | Mehmet Kaya | Yönetici |
+| `ali.demir` · `zeynep.sahin` | Ali Demir · Zeynep Şahin | Çalışan (yöneticisi Ayşe) |
+| `can.ozturk` · `elif.arslan` | Can Öztürk · Elif Arslan | Çalışan (yöneticisi Mehmet) |
 
 **Ortam değişkenleri:**
 
@@ -29,6 +43,9 @@ Veri deposu ilk açılışta `data/leavemanager.db` olarak oluşturulur (git'e g
 | `LEAVE_HOST` | `127.0.0.1` | Dinlenen adres |
 | `LEAVE_PORT` | `8000` | Dinlenen port |
 | `LEAVE_DB_PATH` | `data/leavemanager.db` | SQLite dosyasının yolu |
+| `DEMO_PASSWORD` | — (zorunlu) | Demo kullanıcıların parolası; 12–128 karakter, yaygın olmayan |
+| `LEAVE_COOKIE_SECURE` | `false` | `true`: oturum çerezi yalnızca HTTPS üzerinden gönderilir |
+| `LEAVE_ENV_FILE` | `.env` | Ortam değişkeninde olmayan değerlerin okunduğu dosya |
 
 **Doğrulama:** `./scripts/check` (full) · `./scripts/check --fast` (iç döngü).
 

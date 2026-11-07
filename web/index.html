@@ -10,6 +10,28 @@
   <body>
     <main>
       <h1>Leave Manager</h1>
+
+      <section id="login" class="card" hidden>
+        <form id="login-form" novalidate>
+          <div class="field">
+            <label for="username">Kullanıcı adı</label>
+            <input id="username" name="username" type="text" autocomplete="username" required>
+          </div>
+          <div class="field">
+            <label for="password">Parola</label>
+            <input id="password" name="password" type="password" autocomplete="current-password" required>
+          </div>
+          <button id="login-button" type="submit">Giriş yap</button>
+        </form>
+        <p id="login-message" class="message" aria-live="polite"></p>
+      </section>
+
+      <section id="welcome" class="card" hidden>
+        <p id="welcome-text"></p>
+        <button id="logout-button" type="button">Çıkış</button>
+        <p id="welcome-message" class="message" aria-live="polite"></p>
+      </section>
+
       <p id="status" class="status status--loading" role="status" aria-live="polite">Sistem durumu kontrol ediliyor…</p>
     </main>
   </body>

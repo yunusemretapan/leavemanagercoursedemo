@@ -40,7 +40,8 @@
 - `business` katmanı iş kuralı ihlalinde `app/models` içindeki `DomainError` alt sınıflarını fırlatır
   (ör. `InsufficientBalance`, `OverlappingRequest`, `InvalidDateRange`, `NotAuthorized`, `NotFound`,
   `InvalidStateTransition`). Her alt sınıf sabit bir İngilizce `code` ve Türkçe `message` taşır.
-- `api` katmanında **tek** bir exception handler eşler: Pydantic doğrulama → `422`, oturum yok → `401`,
+- `api` katmanında **tek** bir exception handler eşler: Pydantic doğrulama → `422`, oturum yok / süresi doldu / hatalı giriş
+  (`Unauthenticated`, `SessionExpired`, `InvalidCredentials`) → `401`,
   `NotAuthorized` → `403`, `NotFound` → `404`, `ServiceUnavailable` (veri deposuna erişilemiyor) → `503`,
   diğer kural ihlalleri → `409`. Eşleme tablosu: `app/api/errors.py` (`STATUS_BY_ERROR`).
 - Yanıt gövdesi her zaman: `{"error": {"code": "<EN_CODE>", "message": "<Türkçe mesaj>"}}`.
@@ -52,7 +53,8 @@
 - İzin tarihleri saatsiz `datetime.date`; API'de ISO-8601 `YYYY-MM-DD`; SQLite'ta `TEXT` (ISO).
 - Zaman damgaları (`created_at`, `decided_at`) UTC, ISO-8601 `Z` sonekli `TEXT`.
 - "Bugün" ve "şimdi" yalnızca enjekte edilen `Clock`'tan gelir; `date.today()`, `datetime.now()`,
-  `datetime.utcnow()` doğrudan kullanılmaz (testte `FixedClock`).
+  `datetime.utcnow()` doğrudan kullanılmaz. Arayüz `app/models/clock.py` (`Clock`, `SystemClock`);
+  testte `tests/conftest.py` `FakeClock`.
 - Gün sayıları `int` (yarım gün yok). Kimlikler SQLite `INTEGER PRIMARY KEY`.
 - Durum ve tür alanları `Enum` (İngilizce değerler: `PENDING / APPROVED / REJECTED / CANCELLED`, `ANNUAL`);
   DB'de enum değeri `TEXT` olarak, `CHECK` kısıtıyla.
@@ -67,6 +69,8 @@
 - Makinedeki Python 3.7 ile çalışmak (çıplak `python`/`pip`) — her zaman `.venv` yorumlayıcısı (`.venv/Scripts/python -m …` Windows, `.venv/bin/python -m …` Linux) — from bootstrap 2026-11-07
 - `TestClient(app)`'i `with` olmadan kurmak (lifespan/migration çalışmaz) — istemciyi her zaman bir fixture içinde `with TestClient(app) as client:` ile kur — from bootstrap 2026-11-07
 - Windows'ta `mimetypes` kayıt defterinden `.js` → `text/plain` okur, tarayıcı ES module script'i reddeder ve sayfa çalışmaz — composition root'ta `mimetypes.add_type("text/javascript", ".js")` (sonrasında `mimetypes.init()` çağrılmaz, eşlemeyi geri alır) (`app/main.py`); testi `test_module_scripts_are_served_as_javascript_even_if_os_says_text_plain` — from spec 0001 VERIFY F-V1
+- Starlette `.env` okuyucusu (`starlette.config.Config`) değerleri kırpar ve çevreleyen tırnakları atar; ortam değişkeni kırpılmaz — boşluk/tırnak taşıyabilen sırları ortam değişkeniyle verin, `.env` davranışını `.env.example`/README'de belgeleyin — from spec 0002 review F-3
+- FastAPI'nin `strict_content_type` varsayılanını (True) kapatmak — Content-Type'sız JSON gövdeleri kabul edilir ve R-11'in JSON-only CSRF katmanı kaybolur; kapatılmaz (testler: `test_non_json_logout_is_rejected_and_session_survives`, `test_json_login_without_content_type_is_rejected`) — from spec 0002 review round 2 F-2
 - Pydantic `date` alanının saat içeren değerleri gevşekçe kabul etmesi — tarih alanlarında strict mod + `YYYY-MM-DD` doğrulaması — from bootstrap 2026-11-07
 
 ## Enforced by tooling

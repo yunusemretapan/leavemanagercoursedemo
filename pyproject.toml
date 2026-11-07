@@ -66,6 +66,8 @@ name = "api never skips business: no app.data, no sqlite3"
 type = "forbidden"
 source_modules = ["app.api"]
 forbidden_modules = ["app.data", "sqlite3"]
+# Direct imports only: api -> business -> data is the required path (spec 0002, A-1).
+allow_indirect_imports = "True"
 
 [[tool.importlinter.contracts]]
 name = "business knows no HTTP: no fastapi, no starlette"

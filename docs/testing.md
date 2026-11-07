@@ -21,9 +21,12 @@
   Ekran durumları (boş, yükleniyor, hata, başarı, yetki yok) saf fonksiyon testleriyle kanıtlanır;
   ekran görüntüsü VERIFY'da alınır (Evidence for UI criteria).
 - **Determinizm (bu yığında):**
-  - Zaman: her test `FixedClock` enjekte eder; check adımları `TZ=UTC` ile koşar. `date.today()`/`datetime.now()` yasak (Ruff `DTZ`).
+  - Zaman: zamana bağlı her test `FakeClock` (`tests/conftest.py`, `clock` fixture'ı) enjekte eder; check adımları `TZ=UTC` ile koşar. `date.today()`/`datetime.now()` yasak (Ruff `DTZ`).
   - Veri: her integration testi kendi geçici SQLite dosyasını (`tmp_path`) kullanır; migration'lar sıfırdan uygulanır, seed test içinde yapılır. Bir koşunun verisi sonrakine ulaşmaz (Resource hygiene 5).
-  - Oturum: testlerde sabit bir test `SESSION_SECRET`'ı; gerçek `.env` okunmaz.
+  - Kimlik: testler sabit bir test `DEMO_PASSWORD`'ü (`TEST_DEMO_PASSWORD`) ve düşük maliyetli scrypt
+    (`FAST_SCRYPT`) kullanır; geliştiricinin `.env`'i okunmaz (`Settings` doğrudan kurulur, alt süreç
+    testleri `LEAVE_ENV_FILE`'ı var olmayan bir yola ayarlar). Üretim scrypt parametreleri
+    `test_verify_with_production_params` ve alt süreç açılış testinde kanıtlanır.
   - Rastgelelik yok; ağ yok (pip-audit hariç, o full-only ve `requires` satırlı).
   - Hareket: arayüzde animasyon/geçiş yok; saf fonksiyon testleri zamana bağlı değildir.
   - Ekran görüntüsü aracı (VERIFY'da): ilk UI spec'inde seçilir; kaydedilmez (Evidence policy).

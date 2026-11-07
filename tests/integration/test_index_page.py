@@ -34,3 +34,14 @@ def test_module_scripts_are_served_as_javascript_even_if_os_says_text_plain(
         assert response.headers["content-type"].startswith("text/javascript")
     finally:
         mimetypes.init()
+
+
+def test_index_page_has_labelled_login_form(client: TestClient) -> None:
+    html = client.get("/").text
+    assert '<label for="username">Kullanıcı adı</label>' in html
+    assert '<label for="password">Parola</label>' in html
+    assert 'id="username" name="username" type="text" autocomplete="username"' in html
+    assert 'type="password" autocomplete="current-password"' in html
+    assert ">Giriş yap</button>" in html
+    assert 'id="login-message" class="message" aria-live="polite"' in html
+    assert ">Çıkış</button>" in html

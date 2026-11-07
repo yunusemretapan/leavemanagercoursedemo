@@ -17,7 +17,8 @@
 
 ## Language & framework versions
 - **Python 3.13** — `.python-version` ve `pyproject.toml` `requires-python = ">=3.13,<3.14"` ile sabit.
-- Sanal ortam: `.venv` (`python -m venv .venv`), paketler `pip` ile; bağımlılıklar `pyproject.toml`'da,
+- Sanal ortam: `.venv` (`py -3.13 -m venv .venv`), paketler `pip` ile; venv yorumlayıcısı her yerde
+  `./scripts/py` ile çağrılır (Windows ve Linux'ta aynı komut, check.conf da bunu kullanır); bağımlılıklar `pyproject.toml`'da,
   kesin sürümler `requirements.lock` (pip-tools `pip-compile`) ile kilitli.
 - FastAPI + Uvicorn + Pydantic v2; veritabanı standart kütüphane `sqlite3` (ORM yok).
 - Geliştirme araçları: pytest, Ruff (lint + format), mypy (strict), import-linter, pip-audit, pip-tools.
@@ -40,7 +41,8 @@
   (ör. `InsufficientBalance`, `OverlappingRequest`, `InvalidDateRange`, `NotAuthorized`, `NotFound`,
   `InvalidStateTransition`). Her alt sınıf sabit bir İngilizce `code` ve Türkçe `message` taşır.
 - `api` katmanında **tek** bir exception handler eşler: Pydantic doğrulama → `422`, oturum yok → `401`,
-  `NotAuthorized` → `403`, `NotFound` → `404`, diğer kural ihlalleri → `409`.
+  `NotAuthorized` → `403`, `NotFound` → `404`, `ServiceUnavailable` (veri deposuna erişilemiyor) → `503`,
+  diğer kural ihlalleri → `409`. Eşleme tablosu: `app/api/errors.py` (`STATUS_BY_ERROR`).
 - Yanıt gövdesi her zaman: `{"error": {"code": "<EN_CODE>", "message": "<Türkçe mesaj>"}}`.
 - Router'larda `try/except` ile hata yutmak veya `HTTPException`'ı iş kuralı için kullanmak yasak.
 - Kullanıcıya **asla** sızmayanlar: stack trace, SQL, dosya yolları, iç exception mesajları.
@@ -64,6 +66,7 @@
 - `sqlite3` bağlantısını thread'ler arasında paylaşmak — her istek kendi bağlantısını açar/kapatır, açılışta `PRAGMA foreign_keys=ON` — from bootstrap 2026-11-07
 - Makinedeki Python 3.7 ile çalışmak (çıplak `python`/`pip`) — her zaman `.venv` yorumlayıcısı (`.venv/Scripts/python -m …` Windows, `.venv/bin/python -m …` Linux) — from bootstrap 2026-11-07
 - `TestClient(app)`'i `with` olmadan kurmak (lifespan/migration çalışmaz) — istemciyi her zaman bir fixture içinde `with TestClient(app) as client:` ile kur — from bootstrap 2026-11-07
+- Windows'ta `mimetypes` kayıt defterinden `.js` → `text/plain` okur, tarayıcı ES module script'i reddeder ve sayfa çalışmaz — composition root'ta `mimetypes.add_type("text/javascript", ".js")` (sonrasında `mimetypes.init()` çağrılmaz, eşlemeyi geri alır) (`app/main.py`); testi `test_module_scripts_are_served_as_javascript_even_if_os_says_text_plain` — from spec 0001 VERIFY F-V1
 - Pydantic `date` alanının saat içeren değerleri gevşekçe kabul etmesi — tarih alanlarında strict mod + `YYYY-MM-DD` doğrulaması — from bootstrap 2026-11-07
 
 ## Enforced by tooling

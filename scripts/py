@@ -1,0 +1,9 @@
+#!/bin/sh
+# Runs the project's venv Python 3.13 on Windows (Git Bash) and Linux alike — never the bare
+# `python` (docs/conventions.md, Known traps). Used by scripts/check.conf as ./scripts/py.
+ROOT=$(cd "$(dirname "$0")/.." && pwd)
+for p in "$ROOT/.venv/Scripts/python.exe" "$ROOT/.venv/bin/python"; do
+  if [ -x "$p" ]; then exec "$p" "$@"; fi
+done
+echo "scripts/py: .venv not found — create it first (README.md, Çalıştırma)" >&2
+exit 127

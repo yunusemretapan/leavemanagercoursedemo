@@ -1,0 +1,80 @@
+[project]
+name = "leave-manager"
+version = "0.1.0"
+description = "Leave Manager — izin yönetimi kurs demosu"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "httpx",
+    "ruff",
+    "mypy",
+    "import-linter",
+    "pip-audit",
+    "pip-tools",
+]
+
+# The app is not installed as a package: it runs from the repo root (python -m app).
+[tool.setuptools]
+packages = []
+
+# --- Ruff (docs/conventions.md, Enforced by tooling) ---
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+extend-exclude = [".venv", "data"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "S", "ASYNC", "PTH", "DTZ"]
+
+[tool.ruff.lint.per-file-ignores]
+# assert is how pytest asserts; subprocess in the startup test is intentional and argument-listed
+"tests/**" = ["S101", "S603"]
+
+# --- mypy ---
+[tool.mypy]
+strict = true
+python_version = "3.13"
+files = ["app", "tests"]
+
+# --- pytest (docs/testing.md) ---
+[tool.pytest.ini_options]
+addopts = ["--strict-markers"]
+markers = [
+    "integration: API + real temporary SQLite tests (full profile only)",
+]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+# --- import-linter (docs/architecture.md, Forbidden dependencies 1–4) ---
+[tool.importlinter]
+root_package = "app"
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "Layers: api > business > data (no upward imports)"
+type = "layers"
+layers = ["app.api", "app.business", "app.data"]
+
+[[tool.importlinter.contracts]]
+name = "api never skips business: no app.data, no sqlite3"
+type = "forbidden"
+source_modules = ["app.api"]
+forbidden_modules = ["app.data", "sqlite3"]
+
+[[tool.importlinter.contracts]]
+name = "business knows no HTTP: no fastapi, no starlette"
+type = "forbidden"
+source_modules = ["app.business"]
+forbidden_modules = ["fastapi", "starlette"]
+
+[[tool.importlinter.contracts]]
+name = "models are pure: no layers, no frameworks, no sqlite3"
+type = "forbidden"
+source_modules = ["app.models"]
+forbidden_modules = ["app.api", "app.business", "app.data", "fastapi", "starlette", "pydantic", "sqlite3"]

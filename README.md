@@ -1,3 +1,39 @@
+# Leave Manager — Çalıştırma
+
+İzin yönetimi kurs demosu (Python 3.13 + FastAPI · SQLite · düz HTML/CSS/JS). Proje kuralları:
+[AGENTS.md](AGENTS.md). Bu bölümün altındaki metin, projenin üzerine kurulduğu ANEW çalışma alanını
+anlatır.
+
+**Gereksinimler:** Python 3.13 (Windows'ta `py -3.13`), Node 20+ (yalnızca web testleri için).
+
+**Ortamı kurma** (bir kez):
+
+```sh
+py -3.13 -m venv .venv              # Linux/macOS: python3.13 -m venv .venv
+./scripts/py -m pip install -r requirements.lock
+```
+
+**Başlatma:**
+
+```sh
+./scripts/py -m app                 # veya etkin venv'de: python -m app
+```
+
+Ardından tarayıcıda <http://127.0.0.1:8000> adresini açın; sağlık kontrolü: `/api/health`.
+Veri deposu ilk açılışta `data/leavemanager.db` olarak oluşturulur (git'e girmez).
+
+**Ortam değişkenleri:**
+
+| Değişken | Varsayılan | Anlamı |
+|---|---|---|
+| `LEAVE_HOST` | `127.0.0.1` | Dinlenen adres |
+| `LEAVE_PORT` | `8000` | Dinlenen port |
+| `LEAVE_DB_PATH` | `data/leavemanager.db` | SQLite dosyasının yolu |
+
+**Doğrulama:** `./scripts/check` (full) · `./scripts/check --fast` (iç döngü).
+
+---
+
 # ANEW — AI Native Engineering Workspace
 
 **A general-purpose, technology-agnostic bootstrap for building software with AI — under control.**

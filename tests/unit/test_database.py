@@ -1,8 +1,10 @@
 import sqlite3
+from typing import Any
 
 import pytest
 
 from app.data.database import Database
+from app.models.errors import ServiceUnavailable
 
 
 def _try_write_lock(db: Database) -> None:
@@ -28,3 +30,27 @@ def test_default_connection_does_not_lock_on_read(seeded_db: Database) -> None:
     with seeded_db.connect() as conn:
         conn.execute("SELECT COUNT(*) FROM login_failures").fetchone()
         _try_write_lock(seeded_db)
+
+
+def test_lock_timeout_is_service_unavailable_and_closes_connection(
+    seeded_db: Database, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    opened: list[sqlite3.Connection] = []
+    real_connect = sqlite3.connect
+
+    def short_timeout(*args: Any, **kwargs: Any) -> sqlite3.Connection:
+        conn: sqlite3.Connection = real_connect(*args, **{**kwargs, "timeout": 0})
+        opened.append(conn)
+        return conn
+
+    holder = real_connect(seeded_db.path, autocommit=True)
+    try:
+        holder.execute("BEGIN IMMEDIATE")
+        monkeypatch.setattr(sqlite3, "connect", short_timeout)
+        with pytest.raises(ServiceUnavailable), seeded_db.connect(immediate=True):
+            pass
+    finally:
+        holder.close()
+    assert len(opened) == 1
+    with pytest.raises(sqlite3.ProgrammingError, match="closed"):
+        opened[0].execute("SELECT 1")

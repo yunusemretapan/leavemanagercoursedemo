@@ -27,6 +27,9 @@ class Database:
         """
         try:
             conn = sqlite3.connect(self.path, autocommit=True)
+        except sqlite3.Error as exc:
+            raise ServiceUnavailable() from exc
+        try:
             # PRAGMA foreign_keys is a no-op inside a transaction: set it before one opens.
             conn.execute("PRAGMA foreign_keys=ON")
             if immediate:
@@ -34,6 +37,7 @@ class Database:
             else:
                 conn.autocommit = False
         except sqlite3.Error as exc:
+            conn.close()  # e.g. BEGIN IMMEDIATE timed out: do not leak the connection
             raise ServiceUnavailable() from exc
         try:
             yield conn

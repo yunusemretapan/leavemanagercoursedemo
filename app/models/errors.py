@@ -18,3 +18,22 @@ class DomainError(Exception):
 class ServiceUnavailable(DomainError):
     code = "SERVICE_UNAVAILABLE"
     message = "Hizmet şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin."
+
+
+class Unauthenticated(DomainError):
+    code = "UNAUTHENTICATED"
+    message = "Bu işlem için giriş yapmanız gerekiyor."
+
+
+class SessionExpired(DomainError):
+    code = "SESSION_EXPIRED"
+    message = "Oturumunuzun süresi doldu. Lütfen tekrar giriş yapın."
+
+
+class InvalidCredentials(DomainError):
+    code = "INVALID_CREDENTIALS"
+    message = "Kullanıcı adı veya parola hatalı."
+
+
+class ConfigurationError(Exception):
+    """Invalid startup configuration: the application refuses to start (never an HTTP error)."""

@@ -81,7 +81,9 @@ class AuthService:
         now = self._clock.now()
         expired = False
         user: User | None = None
-        with self._db.connect() as conn:
+        # Reads, then writes: immediate, or a concurrent writer makes it fail at once with
+        # "database is locked" instead of waiting (Known traps; review R2-1).
+        with self._db.connect(immediate=True) as conn:
             sessions = SessionRepository(conn)
             record = sessions.get(digest)
             if record is None:

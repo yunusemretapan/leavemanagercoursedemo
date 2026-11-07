@@ -1,10 +1,13 @@
 import sqlite3
-from datetime import timedelta
+import threading
+import time
+from datetime import datetime, timedelta
 
 import pytest
 
 from app.business.auth import AuthService, token_digest
 from app.data.database import Database
+from app.data.sessions import SessionRepository
 from app.models.errors import InvalidCredentials, SessionExpired, Unauthenticated
 from app.models.user import Role
 from tests.conftest import FAST_SCRYPT, TEST_DEMO_PASSWORD, FakeClock
@@ -117,3 +120,43 @@ def test_missing_or_unknown_token_is_unauthenticated(auth: AuthService) -> None:
     for token in (None, "", "not-a-real-token"):
         with pytest.raises(Unauthenticated):
             auth.authenticate(token)
+
+
+def test_authenticate_waits_for_a_concurrent_writer(
+    auth: AuthService, seeded_db: Database, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Review R2-1: a writer that commits while authenticate has read but not yet written must
+    # make authenticate wait, not fail with "database is locked" (deferred read-then-write).
+    token = auth.login("ali.demir", TEST_DEMO_PASSWORD).token
+    held = threading.Event()
+    go = threading.Event()
+
+    def writer() -> None:
+        conn = sqlite3.connect(seeded_db.path, timeout=5, autocommit=True)
+        try:
+            conn.execute("BEGIN IMMEDIATE")
+            conn.execute(
+                "INSERT INTO login_failures (kind, key, attempted_at) VALUES ('IP', 'x', 'y')"
+            )
+            held.set()
+            go.wait(timeout=1)
+            conn.execute("COMMIT")
+        finally:
+            conn.close()
+
+    real_touch = SessionRepository.touch
+
+    def touch_after_writer_commits(self: SessionRepository, digest: str, at: datetime) -> None:
+        go.set()  # the writer now tries to commit while this transaction is open
+        time.sleep(0.3)
+        real_touch(self, digest, at)
+
+    monkeypatch.setattr(SessionRepository, "touch", touch_after_writer_commits)
+    thread = threading.Thread(target=writer)
+    thread.start()
+    assert held.wait(timeout=5)
+    try:
+        assert auth.authenticate(token).username == "ali.demir"
+    finally:
+        go.set()
+        thread.join(timeout=10)

@@ -54,3 +54,17 @@ def test_lock_timeout_is_service_unavailable_and_closes_connection(
     assert len(opened) == 1
     with pytest.raises(sqlite3.ProgrammingError, match="closed"):
         opened[0].execute("SELECT 1")
+
+
+def test_lock_contention_inside_a_transaction_is_service_unavailable(seeded_db: Database) -> None:
+    # Safety net (review R2-1): contention is a temporary outage (503), not a bug (500).
+    with pytest.raises(ServiceUnavailable), seeded_db.connect():
+        raise sqlite3.OperationalError("database is locked")
+
+
+def test_other_database_errors_are_not_masked(seeded_db: Database) -> None:
+    with (
+        pytest.raises(sqlite3.OperationalError, match="no such table"),
+        seeded_db.connect() as conn,
+    ):
+        conn.execute("SELECT * FROM no_such_table")

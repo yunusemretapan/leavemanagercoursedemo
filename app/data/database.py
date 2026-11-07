@@ -8,6 +8,13 @@ from pathlib import Path
 from app.models.errors import ServiceUnavailable
 
 
+def _is_contention(exc: BaseException) -> bool:
+    if not isinstance(exc, sqlite3.OperationalError):
+        return False
+    message = str(exc).lower()
+    return "locked" in message or "busy" in message
+
+
 class Database:
     """One SQLite file. Every caller gets its own short-lived connection (Known traps)."""
 
@@ -45,12 +52,15 @@ class Database:
                 conn.execute("COMMIT")
             else:
                 conn.commit()
-        except BaseException:
+        except BaseException as exc:
             if immediate:
                 if conn.in_transaction:
                     conn.execute("ROLLBACK")
             else:
                 conn.rollback()
+            if _is_contention(exc):
+                # Safety net: lock contention is a temporary outage (503), not a bug (500).
+                raise ServiceUnavailable() from exc
             raise
         finally:
             conn.close()

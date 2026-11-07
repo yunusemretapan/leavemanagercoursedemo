@@ -73,6 +73,7 @@
 - Starlette `.env` okuyucusu (`starlette.config.Config`) değerleri kırpar ve çevreleyen tırnakları atar; ortam değişkeni kırpılmaz — boşluk/tırnak taşıyabilen sırları ortam değişkeniyle verin, `.env` davranışını `.env.example`/README'de belgeleyin — from spec 0002 review F-3
 - FastAPI'nin `strict_content_type` varsayılanını (True) kapatmak — Content-Type'sız JSON gövdeleri kabul edilir ve R-11'in JSON-only CSRF katmanı kaybolur; kapatılmaz (testler: `test_non_json_logout_is_rejected_and_session_survives`, `test_json_login_without_content_type_is_rejected`) — from spec 0002 review round 2 F-2
 - Kullanıcıdan gelen bir değeri (ör. kullanıcı adı) log'a olduğu gibi `%s` ile yazmak — satır sonu içeren bir değer sahte bir denetim satırı üretir (CWE-117); kontrol ve boşluk karakterlerini kaçışla (`_log_safe`, `app/business/login_throttle.py`; test `test_lock_log_line_escapes_control_characters`) — from spec 0003 review F-1
+- SQLite'ta önce okuyup sonra yazan deferred işlem (`connect()`), eşzamanlı bir yazıcı varken busy timeout'u beklemeden `database is locked` verir (deadlock önleme) — okuma ile başlayıp yazan işlemlerde `connect(immediate=True)` kullan; kalan çekişme `503`'e eşlenir (test `test_authenticate_waits_for_a_concurrent_writer`) — from spec 0003 review round 2 R2-1
 - Pydantic `date` alanının saat içeren değerleri gevşekçe kabul etmesi — tarih alanlarında strict mod + `YYYY-MM-DD` doğrulaması — from bootstrap 2026-11-07
 
 ## Enforced by tooling

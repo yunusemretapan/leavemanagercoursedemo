@@ -41,7 +41,8 @@
   (ör. `InsufficientBalance`, `OverlappingRequest`, `InvalidDateRange`, `NotAuthorized`, `NotFound`,
   `InvalidStateTransition`). Her alt sınıf sabit bir İngilizce `code` ve Türkçe `message` taşır.
 - `api` katmanında **tek** bir exception handler eşler: Pydantic doğrulama → `422`, oturum yok / süresi doldu / hatalı giriş
-  (`Unauthenticated`, `SessionExpired`, `InvalidCredentials`) → `401`,
+  (`Unauthenticated`, `SessionExpired`, `InvalidCredentials`) → `401`, `TooManyAttempts` → `429`
+  (+ `Retry-After` başlığı),
   `NotAuthorized` → `403`, `NotFound` → `404`, `ServiceUnavailable` (veri deposuna erişilemiyor) → `503`,
   diğer kural ihlalleri → `409`. Eşleme tablosu: `app/api/errors.py` (`STATUS_BY_ERROR`).
 - Yanıt gövdesi her zaman: `{"error": {"code": "<EN_CODE>", "message": "<Türkçe mesaj>"}}`.

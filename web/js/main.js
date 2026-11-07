@@ -1,6 +1,6 @@
 // DOM binding only — no logic (the logic lives in status-view.js / auth-view.js and is tested there).
 import { renderStatus, stateFromHealth } from './status-view.js';
-import { errorCodeOf, loginFormView, welcomeText } from './auth-view.js';
+import { errorCodeOf, loginFormView, logoutOutcome, welcomeText } from './auth-view.js';
 
 const statusElement = document.getElementById('status');
 const loginSection = document.getElementById('login');
@@ -12,6 +12,7 @@ const loginMessage = document.getElementById('login-message');
 const welcomeSection = document.getElementById('welcome');
 const welcomeElement = document.getElementById('welcome-text');
 const logoutButton = document.getElementById('logout-button');
+const welcomeMessage = document.getElementById('welcome-message');
 
 const NETWORK = 'NETWORK';
 
@@ -32,6 +33,7 @@ function showLogin(formState) {
 
 function showWelcome(user) {
   welcomeElement.textContent = welcomeText(user);
+  welcomeMessage.textContent = '';
   loginSection.hidden = true;
   welcomeSection.hidden = false;
   logoutButton.focus();
@@ -89,15 +91,23 @@ loginForm.addEventListener('submit', async (event) => {
 });
 
 logoutButton.addEventListener('click', async () => {
+  let ok = false;
   try {
-    await fetch('/api/auth/logout', {
+    const response = await fetch('/api/auth/logout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: '{}',
     });
-  } finally {
+    ok = response.ok;
+  } catch {
+    ok = false;
+  }
+  const outcome = logoutOutcome(ok);
+  if (outcome.showLogin) {
     showLogin({});
     usernameInput.focus();
+  } else {
+    welcomeMessage.textContent = outcome.message;
   }
 });
 

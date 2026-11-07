@@ -1,7 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { errorCodeOf, loginFormView, messageForError, welcomeText } from '../js/auth-view.js';
+import {
+  errorCodeOf,
+  loginFormView,
+  logoutOutcome,
+  messageForError,
+  welcomeText,
+} from '../js/auth-view.js';
 
 test('loginFormView states', () => {
   assert.deepEqual(loginFormView(), { buttonText: 'Giriş yap', buttonDisabled: false, message: '' });
@@ -51,4 +57,12 @@ test('errorCodeOf reads the standard error body', () => {
   assert.equal(errorCodeOf({ error: { code: 'SESSION_EXPIRED', message: '…' } }), 'SESSION_EXPIRED');
   assert.equal(errorCodeOf(null), null);
   assert.equal(errorCodeOf({ status: 'ok' }), null);
+});
+
+test('logoutOutcome stays signed in with a message when logout fails', () => {
+  assert.deepEqual(logoutOutcome(true), { showLogin: true, message: '' });
+  assert.deepEqual(logoutOutcome(false), {
+    showLogin: false,
+    message: 'Sunucuya ulaşılamıyor. Lütfen daha sonra tekrar deneyin.',
+  });
 });

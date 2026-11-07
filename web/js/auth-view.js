@@ -45,3 +45,11 @@ export function welcomeText(user) {
 export function errorCodeOf(body) {
   return body && typeof body === 'object' && body.error ? body.error.code ?? null : null;
 }
+
+/**
+ * What the page does after a logout attempt: only a confirmed logout shows the login form;
+ * otherwise the session may still be open, so stay signed in and say so (review F-6).
+ */
+export function logoutOutcome(ok) {
+  return ok ? { showLogin: true, message: '' } : { showLogin: false, message: MESSAGES.NETWORK };
+}

@@ -1,14 +1,18 @@
 import logging
 import sqlite3
 import threading
+import time
 from datetime import timedelta
 
 import pytest
 
+import app.business.auth as auth_module
+from app.business import passwords
+from app.business.auth import AuthService
 from app.business.login_throttle import ACCOUNT_LIMIT, IP_LIMIT, LoginThrottle
 from app.data.database import Database
-from app.models.errors import TooManyAttempts
-from tests.conftest import FakeClock
+from app.models.errors import InvalidCredentials, TooManyAttempts
+from tests.conftest import FAST_SCRYPT, FakeClock
 
 USER = "ali.demir"
 IP = "10.0.0.1"
@@ -183,3 +187,48 @@ def test_concurrent_wrong_attempts_verify_at_most_five(throttle: LoginThrottle) 
         thread.join(timeout=30)
     assert len(admitted) == ACCOUNT_LIMIT
     assert len(refused) == 10 - ACCOUNT_LIMIT
+
+
+def test_concurrent_wrong_logins_verify_password_at_most_five(
+    seeded_db: Database,
+    clock: FakeClock,
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    # End to end through AuthService: a slowed verification keeps every admitted attempt in
+    # flight, so only the reserve transaction can stop the other five (review F-2).
+    verified: list[int] = []
+    real_verify = passwords.verify_password
+
+    def slow_verify(password: str, stored: str) -> bool:
+        verified.append(1)
+        time.sleep(0.2)
+        return real_verify(password, stored)
+
+    monkeypatch.setattr(auth_module, "verify_password", slow_verify)
+    auth = AuthService(seeded_db, clock, FAST_SCRYPT)
+    outcomes: list[str] = []
+    barrier = threading.Barrier(10)
+
+    def attempt(i: int) -> None:
+        barrier.wait()
+        try:
+            auth.login(USER, "yanlis parola denemesi", client_ip=f"10.0.1.{i}")
+            outcomes.append("logged in")
+        except InvalidCredentials:
+            outcomes.append("invalid")
+        except TooManyAttempts:
+            outcomes.append("refused")
+        except Exception as exc:  # any other error must fail the test, not hide in a thread
+            outcomes.append(f"error: {exc!r}")
+
+    with caplog.at_level(logging.WARNING, logger="app.auth"):
+        threads = [threading.Thread(target=attempt, args=(i,)) for i in range(10)]
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join(timeout=30)
+    assert sorted(outcomes) == ["invalid"] * ACCOUNT_LIMIT + ["refused"] * (10 - ACCOUNT_LIMIT)
+    assert len(verified) == ACCOUNT_LIMIT
+    locks = [r for r in caplog.records if r.name == "app.auth"]
+    assert len(locks) == 1

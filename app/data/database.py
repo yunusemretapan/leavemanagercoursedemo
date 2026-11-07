@@ -20,7 +20,10 @@ class Database:
 
         immediate=True takes SQLite's write lock before the first read (BEGIN IMMEDIATE), so a
         check-then-insert cannot race another connection (spec 0003 R-1a). Concurrent writers
-        wait up to the connect timeout (5 s) instead of failing.
+        wait up to the connect timeout (5 s) instead of failing. The guarantee comes from this
+        flag, not from statement order: a default (deferred) transaction only serialises if its
+        first statement happens to be a write, and a deferred read-then-write fails with
+        "database is locked" under contention (test_immediate_connection_holds_write_lock...).
         """
         try:
             conn = sqlite3.connect(self.path, autocommit=True)

@@ -20,7 +20,10 @@ vekil (reverse proxy) yok.
 2. İstemci adresi **doğrudan bağlantıdan** (`request.client.host`) alınır; `X-Forwarded-For` ve
    benzeri başlıklara güvenilmez. Adres bilinmiyorsa tek bir `unknown` sayacı kullanılır.
 3. Bir deneme parola doğrulanmadan önce başarısız sayılır; sınır denetimi ve bu kayıt tek bir
-   `BEGIN IMMEDIATE` işlemindedir (eşzamanlı denemeler sınırı aşamaz).
+   `BEGIN IMMEDIATE` işlemindedir (eşzamanlı denemeler sınırı aşamaz). Garanti ifade sırasından
+   değil `BEGIN IMMEDIATE`'ten gelir: yazma kilidi ilk okumadan önce alınır. Varsayılan (deferred)
+   işlem ancak ilk ifadesi tesadüfen bir yazmaysa sıralanır; okuyup sonra yazan bir deferred
+   işlem yoğunlukta "database is locked" hatası verir.
 
 ## Consequences
 

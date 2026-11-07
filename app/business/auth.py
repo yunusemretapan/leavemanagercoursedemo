@@ -5,6 +5,7 @@ import secrets
 from dataclasses import dataclass
 from datetime import timedelta
 
+from app.business.login_throttle import LoginThrottle
 from app.business.passwords import PRODUCTION_SCRYPT, ScryptParams, dummy_hash, verify_password
 from app.data.database import Database
 from app.data.sessions import SessionRepository
@@ -39,16 +40,28 @@ class AuthService:
     ) -> None:
         self._db = db
         self._clock = clock
+        self._throttle = LoginThrottle(db, clock)
         # Unknown usernames are verified against this, so they cost as much as a wrong password.
         self._dummy_hash = dummy_hash(params)
 
-    def login(self, username: str, password: str, previous_token: str | None = None) -> LoginResult:
+    def login(
+        self,
+        username: str,
+        password: str,
+        previous_token: str | None = None,
+        client_ip: str = "unknown",
+    ) -> LoginResult:
+        normalized = normalize_username(username)
+        # Counted before verification; TooManyAttempts means the password is never checked.
+        reservation = self._throttle.reserve(normalized, client_ip)
         with self._db.connect() as conn:
-            found = UserRepository(conn).get_with_hash(normalize_username(username))
+            found = UserRepository(conn).get_with_hash(normalized)
         # Verify outside the connection: scrypt is deliberately slow.
         password_ok = verify_password(password, found[1] if found else self._dummy_hash)
         if found is None or not password_ok:
+            self._throttle.failed(reservation)
             raise InvalidCredentials()
+        self._throttle.succeeded(reservation)
         user = found[0]
         now = self._clock.now()
         token = secrets.token_urlsafe(TOKEN_BYTES)

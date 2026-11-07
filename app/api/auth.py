@@ -51,7 +51,11 @@ def login(
 ) -> UserResponse:
     # The body model accepts JSON only: a form-encoded post never reaches here (CSRF, R-11).
     result = auth.login(
-        body.username, body.password, previous_token=request.cookies.get(SESSION_COOKIE)
+        body.username,
+        body.password,
+        previous_token=request.cookies.get(SESSION_COOKIE),
+        # The direct peer only; forwarding headers are never trusted (spec 0003 R-4, ADR 0002).
+        client_ip=request.client.host if request.client else "unknown",
     )
     response.set_cookie(
         SESSION_COOKIE,

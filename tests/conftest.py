@@ -46,11 +46,20 @@ def seeded_db(tmp_path: Path) -> Database:
 @pytest.fixture
 def settings(tmp_path: Path) -> Settings:
     # Every test gets its own fresh SQLite file (docs/testing.md, Resource hygiene 5).
-    return Settings(db_path=tmp_path / "test.db")
+    return Settings(
+        db_path=tmp_path / "test.db", demo_password=TEST_DEMO_PASSWORD, scrypt=FAST_SCRYPT
+    )
 
 
 @pytest.fixture
-def client(settings: Settings) -> Iterator[TestClient]:
-    # Always `with`: without it the lifespan (migrations) does not run (Known traps).
-    with TestClient(create_app(settings)) as test_client:
+def client(settings: Settings, clock: FakeClock) -> Iterator[TestClient]:
+    # Always `with`: without it the lifespan (migrations, seed) does not run (Known traps).
+    with TestClient(create_app(settings, clock)) as test_client:
         yield test_client
+
+
+def login(client: TestClient, username: str = "ali.demir") -> None:
+    response = client.post(
+        "/api/auth/login", json={"username": username, "password": TEST_DEMO_PASSWORD}
+    )
+    assert response.status_code == 200, response.text

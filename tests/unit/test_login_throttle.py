@@ -2,6 +2,7 @@ import logging
 import sqlite3
 import threading
 import time
+from contextlib import AbstractContextManager
 from datetime import timedelta
 
 import pytest
@@ -246,3 +247,21 @@ def test_concurrent_wrong_logins_verify_password_at_most_five(
     assert len(verified) == ACCOUNT_LIMIT
     locks = [r for r in caplog.records if r.name == "app.auth"]
     assert len(locks) == 1
+
+
+def test_every_throttle_transaction_is_immediate(
+    seeded_db: Database, clock: FakeClock, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Review R2-2: the guarantee comes from BEGIN IMMEDIATE, not from statement order.
+    flags: list[bool] = []
+    real_connect = seeded_db.connect
+
+    def spy(immediate: bool = False) -> AbstractContextManager[sqlite3.Connection]:
+        flags.append(immediate)
+        return real_connect(immediate=immediate)
+
+    monkeypatch.setattr(seeded_db, "connect", spy)
+    throttle = LoginThrottle(seeded_db, clock)
+    throttle.failed(throttle.reserve(USER, IP))
+    throttle.succeeded(throttle.reserve(USER, IP))
+    assert flags == [True, True, True, True]

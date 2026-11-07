@@ -16,14 +16,17 @@ class LoginAttemptRepository:
     def __init__(self, conn: sqlite3.Connection) -> None:
         self._conn = conn
 
-    def purge_before(self, cutoff: datetime) -> None:
-        """Delete failures older than cutoff and locks that ended before it (R-6)."""
+    def purge(self, failures_before: datetime, locks_ended_by: datetime) -> None:
+        """Delete failures older than the window and locks that have ended (R-6)."""
         self._conn.execute(
-            "DELETE FROM login_failures WHERE attempted_at < ?", (to_iso(cutoff),)
+            "DELETE FROM login_failures WHERE attempted_at < ?", (to_iso(failures_before),)
         )
         self._conn.execute(
-            "DELETE FROM account_locks WHERE locked_until <= ?", (to_iso(cutoff),)
+            "DELETE FROM account_locks WHERE locked_until <= ?", (to_iso(locks_ended_by),)
         )
+
+    def unlock(self, username: str) -> None:
+        self._conn.execute("DELETE FROM account_locks WHERE username = ?", (username,))
 
     def add_failure(self, kind: AttemptKind, key: str, at: datetime) -> int:
         cursor = self._conn.execute(

@@ -15,6 +15,7 @@ from app.models.errors import (
     InvalidCredentials,
     ServiceUnavailable,
     SessionExpired,
+    TooManyAttempts,
     Unauthenticated,
 )
 
@@ -24,6 +25,7 @@ STATUS_BY_ERROR: dict[type[DomainError], int] = {
     Unauthenticated: 401,
     SessionExpired: 401,
     InvalidCredentials: 401,
+    TooManyAttempts: 429,
 }
 HTTP_ERRORS: dict[int, tuple[str, str]] = {
     404: ("NOT_FOUND", "İstenen kaynak bulunamadı."),
@@ -49,7 +51,10 @@ def status_for(error: DomainError) -> int:
 
 async def _domain_error(_: Request, exc: Exception) -> JSONResponse:
     assert isinstance(exc, DomainError)  # noqa: S101 — registered for DomainError only
-    return JSONResponse(error_body(exc.code, exc.message), status_code=status_for(exc))
+    headers = {"Retry-After": str(exc.retry_after)} if isinstance(exc, TooManyAttempts) else None
+    return JSONResponse(
+        error_body(exc.code, exc.message), status_code=status_for(exc), headers=headers
+    )
 
 
 async def _http_error(_: Request, exc: Exception) -> JSONResponse:

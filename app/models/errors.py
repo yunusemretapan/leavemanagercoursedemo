@@ -37,3 +37,12 @@ class InvalidCredentials(DomainError):
 
 class ConfigurationError(Exception):
     """Invalid startup configuration: the application refuses to start (never an HTTP error)."""
+
+
+class TooManyAttempts(DomainError):
+    code = "TOO_MANY_ATTEMPTS"
+    message = "Çok fazla başarısız giriş denemesi. Lütfen 15 dakika sonra tekrar deneyin."
+
+    def __init__(self, retry_after: int) -> None:
+        super().__init__()
+        self.retry_after = retry_after

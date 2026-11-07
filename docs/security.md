@@ -38,8 +38,19 @@
     belirteçsiz/geçersiz `401 UNAUTHENTICATED`. Her girişte yeni belirteç (session fixation yok);
     çıkış oturumu sunucuda siler.
   - **CSRF:** durum değiştiren istekler yalnızca JSON gövde kabul eder + `SameSite=Lax`.
-  - **Brute force koruması:** spec 0003 (hesap kilidi, IP sınırı) — 0002 ile 0003 arasında yalnızca
-    yerel demo çalıştırılır.
+  - **Brute force koruması** (spec 0003, ADR 0002):
+    - Kullanıcı adı başına son 15 dk'da 5 başarısız deneme → 15 dk kilit (doğru parola da reddedilir,
+      parola doğrulanmaz; kilit sırasındaki denemeler sayılmaz, kilidi uzatmaz). Başarılı giriş
+      kullanıcı adı sayacını sıfırlar ve o kullanıcı adının kilidini kaldırır (kilit, deneme
+      kabul edildikten sonra eşzamanlı başarısızlıklarla oluşmuş olabilir; parola doğrudur). Var olmayan kullanıcı adları aynen sayılır ve kilitlenir.
+    - İstemci adresi başına son 15 dk'da 20 başarısız deneme → o adresin her denemesi reddedilir;
+      başarılı giriş adres sayacını sıfırlamaz. Adres yalnızca doğrudan bağlantıdan alınır,
+      `X-Forwarded-For` okunmaz.
+    - Reddedilen deneme: `429 TOO_MANY_ATTEMPTS`, tek mesaj (hesap/adres ayrımı sızmaz),
+      `Retry-After` saniye. Deneme doğrulamadan önce `BEGIN IMMEDIATE` içinde sayılır (eşzamanlı
+      denemeler sınırı aşamaz). Sayaçlar veri deposunda, yeniden başlatmada korunur.
+    - Kilit açık oturumları sonlandırmaz. Kilit başlangıcı `app.auth` logger'ına `WARNING` olarak
+      yazılır (kullanıcı adı, adres, zaman; parola asla).
 - **Default deny:** açık uç noktalar yalnızca `POST /api/auth/login`, `POST /api/auth/logout` ve
   `GET /api/health` (kişisel veri içermez). Diğer her `/api/*` uç noktası oturum ister; yoksa `401`.
   Bu, `test_every_api_route_requires_session_except_the_allowlist` ile FastAPI'nin OpenAPI rota

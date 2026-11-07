@@ -31,6 +31,8 @@ test('renderStatus unknown state falls back to error', () => {
 test('stateFromHealth is ok only for an ok response with status ok', () => {
   assert.equal(stateFromHealth(true, { status: 'ok', database: 'ok' }), 'ok');
   assert.equal(stateFromHealth(false, { error: { code: 'SERVICE_UNAVAILABLE' } }), 'error');
+  // A non-ok HTTP status is an error even if the body claims ok (VERIFY round 1, F-V2).
+  assert.equal(stateFromHealth(false, { status: 'ok' }), 'error');
   assert.equal(stateFromHealth(true, null), 'error');
   assert.equal(stateFromHealth(true, { status: 'degraded' }), 'error');
 });

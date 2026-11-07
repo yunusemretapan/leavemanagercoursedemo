@@ -15,3 +15,4 @@ step 7). Nothing lands here without that decision; noise is rejected in the tria
 -->
 
 - **B-1** — Gerçek kimlik doğrulama (parola/SSO) yok; demo oturumu (kullanıcı seçimi + imzalı çerez) üretim için uygun değil — Source: bootstrap 2026-11-07 — Severity: Info (kapsam dışı, bilinçli) — Recommendation: ürün üretime aday olursa ayrı bir spec ile gerçek AuthN — Deferred by: yunusemretapan, 2026-11-07, kurs demosu kapsamı (docs/security.md)
+- **B-2** — `StarletteDeprecationWarning`: `starlette.testclient` ile `httpx` kullanımı deprecated (`httpx2` öneriliyor); şimdilik zararsız uyarı — Source: spec 0001, VERIFY round 2 — Severity: Info — Recommendation: bir sonraki bağımlılık güncellemesinde TestClient taşıması, lock yenilenerek — Deferred by: yunusemretapan, 2026-11-07, SHIP'i engellemiyor

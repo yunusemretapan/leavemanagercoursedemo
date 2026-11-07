@@ -47,4 +47,7 @@ ve imzalı çerez kaldırılır; tek sır `DEMO_PASSWORD` olur. Brute force koru
   zorunluluğu (`LEAVE_COOKIE_SECURE=true`) ve Argon2id yeniden değerlendirilir.
 - Giriş gecikmesi veya bellek kullanımı sorun olursa: scrypt parametreleri OWASP'ın eşdeğer
   tablosu içinde (ör. N=2^16, p=2) yeniden ayarlanır — düşürmek değil, dengelemek.
+  Parametre değişikliği iki şey gerektirir: girişte eski parametreli hash'lerin yeniden hash'lenmesi
+  ve sahte hash'in (olmayan kullanıcı) saklanan hash'lerle aynı maliyette kalması — aksi halde yanıt
+  süresi kullanıcı adının varlığını sızdırır (R-6; review round 1 F-9).
 - Birden fazla süreçle çalışma: oturum deposu ve SQLite eşzamanlılığı yeniden ele alınır.

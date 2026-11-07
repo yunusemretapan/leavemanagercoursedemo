@@ -28,4 +28,4 @@ __pycache__/
 *.sqlite3
 
 # Local runtime data (dev database)
-data/
+/data/

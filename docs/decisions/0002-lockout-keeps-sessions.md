@@ -2,6 +2,7 @@
 
 - Status: Accepted
 - Date: 2026-11-07
+- Revised: 2026-11-07 — Decision 3: garanti mekanizmasının açıklaması (review F-2); karar değişmedi
 
 ## Context
 
